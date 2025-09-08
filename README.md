@@ -14,7 +14,7 @@ API REST pour la gestion des réservations et avis d'un établissement hôtelier
 
 - Node.js + Express.js + MongoDB + Mongoose
 
-## ⚡ Installation
+## ⚡ Installation locale
 
 ```bash
 git clone https://github.com/Lucas-tsl/API-RueLucas.git
@@ -26,7 +26,7 @@ Créer un fichier `.env` :
 ```env
 MONGO_URI=mongodb://127.0.0.1:27017/rue_lucas
 PORT=4000
-CORS_ORIGIN=http://localhost:3000
+CORS_ORIGIN=*
 ```
 
 Démarrer l'API :
@@ -35,7 +35,7 @@ npm run dev  # développement
 npm start    # production
 ```
 
-**🌐 API** : http://localhost:4000
+**🌐 Local** : http://localhost:4000 • **🌍 Production** : https://api-rue-lucas.vercel.app
 
 ## 🔗 Endpoints
 
@@ -55,9 +55,9 @@ npm start    # production
 
 ## 📝 Exemples
 
-### Créer une réservation
 ```bash
-curl -X POST http://localhost:4000/reservations \
+# Créer une réservation
+curl -X POST https://api-rue-lucas.vercel.app/reservations \
   -H "Content-Type: application/json" \
   -d '{
     "email": "client@example.com",
@@ -73,16 +73,12 @@ curl -X POST http://localhost:4000/reservations \
     "paymentMethod": "card",
     "amountTotal": 1200.50
   }'
-```
 
-### Rechercher
-```bash
-curl "http://localhost:4000/reservations?q=Jean&status=paid"
-```
+# Rechercher des réservations
+curl "https://api-rue-lucas.vercel.app/reservations?q=Jean&status=paid"
 
-### Ajouter un avis
-```bash
-curl -X POST http://localhost:4000/api/reviews \
+# Ajouter un avis
+curl -X POST https://api-rue-lucas.vercel.app/api/reviews \
   -H "Content-Type: application/json" \
   -d '{
     "author": "Marie",
@@ -91,48 +87,21 @@ curl -X POST http://localhost:4000/api/reviews \
   }'
 ```
 
-## 📊 Statuts
+##  Déploiement Vercel
 
-- `200` Succès • `201` Créé • `400` Erreur • `404` Non trouvé
-
-## 🚀 Déploiement Vercel
-
-### ⚡ Déploiement en 3 étapes
-
-#### 1. 📋 Prérequis
-- Compte GitHub (déjà fait ✅)
-- Compte Vercel gratuit : [vercel.com](https://vercel.com)
-- Base MongoDB Atlas gratuite : [cloud.mongodb.com](https://cloud.mongodb.com)
-
-#### 2. 🗄️ Configuration MongoDB Atlas
-1. **Créer un cluster gratuit** → "M0 Sandbox" (gratuit)
-2. **Database Access** → Add User (nom/mot de passe)
-3. **Network Access** → Add IP → `0.0.0.0/0`
-4. **Connect** → Drivers → Copier l'URI : `mongodb+srv://...`
-
-#### 3. 🚀 Déploiement Vercel
-1. Aller sur [vercel.com](https://vercel.com) → "Sign Up" avec GitHub
-2. "New Project" → Import `Lucas-tsl/API-RueLucas`
-3. **Variables d'environnement** :
+### Configuration rapide :
+1. **MongoDB Atlas** : Créer cluster gratuit → Copier URI
+2. **Vercel** : Import GitHub repo → Variables d'environnement :
    ```
-   MONGO_URI = mongodb+srv://username:password@cluster.mongodb.net/rue_lucas
+   MONGO_URI = mongodb+srv://user:pass@cluster.mongodb.net/rue_lucas
    CORS_ORIGIN = *
    NODE_ENV = production
    ```
-4. "Deploy" 🚀
+3. **Deploy** 🚀
 
-### 🌍 URLs de production
-- **Production** : `https://api-rue-lucas.vercel.app`
-- **Développement** : `http://localhost:4000`
-
-### ✅ Test de production
-```bash
-curl https://api-rue-lucas.vercel.app/health
-```
-
-### 🔄 CI/CD Automatique
-- Push sur `main` → Déploiement automatique
-- Push sur autres branches → Preview automatique
+### CI/CD automatique :
+- Push sur `main` → Déploiement production
+- Push sur branches → Preview automatique
 
 ---
 
