@@ -95,6 +95,45 @@ curl -X POST http://localhost:4000/api/reviews \
 
 - `200` Succès • `201` Créé • `400` Erreur • `404` Non trouvé
 
+## 🚀 Déploiement Vercel
+
+### ⚡ Déploiement en 3 étapes
+
+#### 1. 📋 Prérequis
+- Compte GitHub (déjà fait ✅)
+- Compte Vercel gratuit : [vercel.com](https://vercel.com)
+- Base MongoDB Atlas gratuite : [cloud.mongodb.com](https://cloud.mongodb.com)
+
+#### 2. 🗄️ Configuration MongoDB Atlas
+1. **Créer un cluster gratuit** → "M0 Sandbox" (gratuit)
+2. **Database Access** → Add User (nom/mot de passe)
+3. **Network Access** → Add IP → `0.0.0.0/0`
+4. **Connect** → Drivers → Copier l'URI : `mongodb+srv://...`
+
+#### 3. 🚀 Déploiement Vercel
+1. Aller sur [vercel.com](https://vercel.com) → "Sign Up" avec GitHub
+2. "New Project" → Import `Lucas-tsl/API-RueLucas`
+3. **Variables d'environnement** :
+   ```
+   MONGO_URI = mongodb+srv://username:password@cluster.mongodb.net/rue_lucas
+   CORS_ORIGIN = *
+   NODE_ENV = production
+   ```
+4. "Deploy" 🚀
+
+### 🌍 URLs de production
+- **Production** : `https://api-rue-lucas.vercel.app`
+- **Développement** : `http://localhost:4000`
+
+### ✅ Test de production
+```bash
+curl https://api-rue-lucas.vercel.app/health
+```
+
+### 🔄 CI/CD Automatique
+- Push sur `main` → Déploiement automatique
+- Push sur autres branches → Preview automatique
+
 ---
 
 💻 **Par** [Lucas-tsl](https://github.com/Lucas-tsl) • 🏨 **Projet** Rue Lucas APP

@@ -48,12 +48,30 @@ app.use((error, req, res, next) => {
   });
 });
 
-// 🚀 Connexion MongoDB + lancement serveur
+// � Connexion MongoDB avec cache pour Vercel
+let isConnected = false;
+
+async function connectDB() {
+  if (isConnected) {
+    return;
+  }
+  
+  try {
+    await mongoose.connect(MONGO_URI, {
+      bufferCommands: false,
+    });
+    isConnected = true;
+    console.log('✅ Connecté à MongoDB');
+  } catch (error) {
+    console.error('❌ Erreur de connexion MongoDB :', error);
+    throw error;
+  }
+}
+
+// 🚀 Pour le développement local
 async function startServer() {
   try {
-    await mongoose.connect(MONGO_URI);
-    console.log('✅ Connecté à MongoDB');
-    
+    await connectDB();
     app.listen(PORT, () => {
       console.log(`🚀 API Rue Lucas en ligne : http://localhost:${PORT}`);
       console.log(`📋 Health check : http://localhost:${PORT}/health`);
@@ -61,10 +79,19 @@ async function startServer() {
       console.log(`⭐ Avis : http://localhost:${PORT}/api/reviews`);
     });
   } catch (error) {
-    console.error('❌ Erreur de connexion MongoDB :', error);
+    console.error('❌ Erreur de démarrage :', error);
     process.exit(1);
   }
 }
 
-startServer();
+// 📦 Export pour Vercel (serverless)
+module.exports = async (req, res) => {
+  await connectDB();
+  return app(req, res);
+};
+
+// 🖥️ Démarrage local uniquement si pas en mode serverless
+if (require.main === module) {
+  startServer();
+}
 

@@ -4,10 +4,14 @@
   "description": "API pour les réservations et avis - Rue Lucas",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js",
+    "start": "NODE_ENV=production node server.js",
+    "dev": "NODE_ENV=development node server.js",
     "serve": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
   },
   "keywords": ["api", "reservations", "avis", "rue-lucas"],
   "author": "Lucas",
