@@ -1,88 +1,70 @@
-// server.js
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const morgan = require('morgan');
 
-// const Reservation = require('../models/Reservation');
-// const sendSMS = require('../utils/sendSMS');
-// const sendEmail = require('../utils/sendEmail');
+// Import des routes
+const reservationsRoutes = require('./routes/reservations');
+const reviewsRoutes = require('./routes/reviews');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 4000;
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/rue_lucas';
+const CORS_ORIGIN = process.env.CORS_ORIGIN || '*';
 
 // Middleware
-app.use(cors());
+app.use(cors({ origin: CORS_ORIGIN }));
 app.use(express.json());
+app.use(morgan('dev'));
 
-// URI MongoDB
-const MONGO_URI = 'mongodb+srv://lucas:K6kNPr4U8rbGBr2@api-mongodb.pdhadgj.mongodb.net/RueLucas?retryWrites=true&w=majority&appName=API-MongoDB';
-
-// Schéma Mongoose
-const reviewSchema = new mongoose.Schema({
-  author: String,
-  rating: Number,
-  comment: String,
-  date: { type: Date, default: Date.now }
+// Routes
+app.get('/health', (req, res) => {
+  res.json({ 
+    ok: true, 
+    timestamp: new Date().toISOString(),
+    service: 'API Rue Lucas'
+  });
 });
 
-const Review = mongoose.model('Review', reviewSchema);
+// Routes principales
+app.use('/reservations', reservationsRoutes);
+app.use('/api/reviews', reviewsRoutes);
 
-// 📥 Récupérer les avis
-app.get('/api/reviews', async (req, res) => {
-  try {
-    const reviews = await Review.find().sort({ date: -1 });
-    res.json(reviews);
-  } catch (err) {
-    res.status(500).json({ message: 'Erreur serveur', error: err });
-  }
-});
-// 📥 Ajouter des avis
-  app.post('/api/reviews', async (req, res) => {
-  try {
-    const newReview = new Review(req.body);
-    await newReview.save();
-    res.status(201).json(newReview);
-  } catch (err) {
-    res.status(400).json({ message: 'Erreur lors de l\'ajout', error: err });
-  }
+// Gestion des erreurs 404
+app.use('*', (req, res) => {
+  res.status(404).json({ 
+    error: 'Route non trouvée',
+    availableRoutes: ['/health', '/reservations', '/api/reviews']
+  });
 });
 
-// // Formulaire de réservation
-// router.post('/api/reservations', async (req, res) => {
-//   try {
-//     const reservation = new Reservation({ ...req.body });
-//     reservation.confirmationCode = generateCode();
-
-//     await reservation.save();
-
-//     if (reservation.email) {
-//       await sendEmail(reservation.email, reservation.confirmationCode);
-//     }
-
-//     if (reservation.phoneNumber) {
-//       await sendSMS(reservation.phoneNumber, reservation.confirmationCode);
-//     }
-
-//     res.status(201).json({ success: true, code: reservation.confirmationCode });
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ success: false, error: "Server error" });
-//   }
-// });
-
-// function generateCode() {
-//   return Math.random().toString(36).substring(2, 8).toUpperCase();
-// }
-
-
-
-
+// Gestion globale des erreurs
+app.use((error, req, res, next) => {
+  console.error('Erreur globale:', error);
+  res.status(500).json({ 
+    error: 'Erreur serveur interne',
+    message: process.env.NODE_ENV === 'development' ? error.message : 'Une erreur est survenue'
+  });
+});
 
 // 🚀 Connexion MongoDB + lancement serveur
-mongoose.connect(MONGO_URI)
-  .then(() => {
+async function startServer() {
+  try {
+    await mongoose.connect(MONGO_URI);
     console.log('✅ Connecté à MongoDB');
-    app.listen(PORT, () => console.log(`🚀 API en ligne : http://localhost:${PORT}`));
-  })
-  .catch(err => console.error('❌ Erreur de connexion MongoDB :', err));
+    
+    app.listen(PORT, () => {
+      console.log(`🚀 API Rue Lucas en ligne : http://localhost:${PORT}`);
+      console.log(`📋 Health check : http://localhost:${PORT}/health`);
+      console.log(`🏨 Réservations : http://localhost:${PORT}/reservations`);
+      console.log(`⭐ Avis : http://localhost:${PORT}/api/reviews`);
+    });
+  } catch (error) {
+    console.error('❌ Erreur de connexion MongoDB :', error);
+    process.exit(1);
+  }
+}
+
+startServer();
 
