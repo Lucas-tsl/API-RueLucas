@@ -26,9 +26,7 @@ async function connectDB() {
   }
   
   try {
-    await mongoose.connect(MONGO_URI, {
-      bufferCommands: false,
-    });
+    await mongoose.connect(MONGO_URI);
     isConnected = true;
     console.log('✅ Connecté à MongoDB');
   } catch (error) {
@@ -36,6 +34,19 @@ async function connectDB() {
     throw error;
   }
 }
+
+// Middleware de connexion DB pour toutes les routes
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    res.status(500).json({ 
+      error: 'Erreur de connexion à la base de données',
+      message: error.message 
+    });
+  }
+});
 
 // Routes
 app.get('/health', (req, res) => {
@@ -68,7 +79,4 @@ app.use((error, req, res, next) => {
 });
 
 // 📦 Export pour Vercel (serverless)
-module.exports = async (req, res) => {
-  await connectDB();
-  return app(req, res);
-};
+module.exports = app;
