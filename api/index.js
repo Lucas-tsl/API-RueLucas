@@ -49,6 +49,70 @@ app.use(async (req, res, next) => {
 });
 
 // Routes
+app.get('/', (req, res) => {
+  res.json({
+    name: "API Rue Lucas",
+    version: "1.0.0",
+    description: "API de gestion de réservations et d'avis pour la location de vacances Rue Lucas",
+    status: "🟢 En ligne",
+    endpoints: {
+      health: {
+        url: "/health",
+        method: "GET",
+        description: "Vérifier le statut de l'API"
+      },
+      reservations: {
+        base: "/reservations",
+        methods: {
+          "GET /reservations": "Récupérer toutes les réservations (avec pagination)",
+          "POST /reservations": "Créer une nouvelle réservation",
+          "GET /reservations/:id": "Récupérer une réservation par ID",
+          "PATCH /reservations/:id": "Modifier une réservation",
+          "DELETE /reservations/:id": "Supprimer une réservation"
+        }
+      },
+      reviews: {
+        base: "/api/reviews",
+        methods: {
+          "GET /api/reviews": "Récupérer tous les avis",
+          "POST /api/reviews": "Créer un nouvel avis"
+        }
+      }
+    },
+    examples: {
+      "Créer une réservation": {
+        url: "POST /reservations",
+        body: {
+          email: "client@example.com",
+          phoneNumber: "+33612345678",
+          firstName: "Jean",
+          surname: "Dupont",
+          street: "123 Rue de la Paix",
+          postcode: "75001",
+          city: "Paris",
+          country: "France",
+          startDate: "2025-07-01",
+          endDate: "2025-07-07",
+          paymentMethod: "card",
+          amountTotal: 850.00
+        }
+      },
+      "Créer un avis": {
+        url: "POST /api/reviews",
+        body: {
+          author: "Marie Martin",
+          rating: 5,
+          comment: "Séjour fantastique !"
+        }
+      }
+    },
+    contact: {
+      developer: "Lucas",
+      repository: "https://github.com/Lucas-tsl/API-RueLucas"
+    }
+  });
+});
+
 app.get('/health', (req, res) => {
   res.json({ 
     ok: true, 
@@ -65,7 +129,8 @@ app.use('/api/reviews', reviewsRoutes);
 app.use('*', (req, res) => {
   res.status(404).json({ 
     error: 'Route non trouvée',
-    availableRoutes: ['/health', '/reservations', '/api/reviews']
+    availableRoutes: ['/health', '/reservations', '/api/reviews'],
+    documentation: 'Visitez / pour voir la documentation complète'
   });
 });
 
