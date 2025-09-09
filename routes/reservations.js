@@ -371,7 +371,103 @@ router.patch('/:id', async (req, res) => {
   }
 });
 
-// 🗑️ Supprimer une réservation
+// � Remplacer complètement une réservation (PUT)
+router.put('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const payload = req.body;
+    
+    // Validation de l'ID MongoDB
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: 'ID invalide' });
+    }
+
+    // Validation des champs requis pour PUT (remplacement complet)
+    const requiredFields = ['email', 'phoneNumber', 'firstName', 'surname', 'street', 'postcode', 'city', 'country', 'startDate', 'endDate', 'paymentMethod', 'amountTotal'];
+    const missingFields = requiredFields.filter(field => !payload[field]);
+    
+    if (missingFields.length > 0) {
+      return res.status(400).json({ 
+        error: `Champs manquants pour un remplacement complet: ${missingFields.join(', ')}`,
+        missingFields
+      });
+    }
+
+    // Validation de l'email
+    if (!isValidEmail(payload.email)) {
+      return res.status(400).json({ error: 'Format d\'email invalide' });
+    }
+
+    // Validation des dates
+    const dateValidation = validateDates(payload.startDate, payload.endDate);
+    if (!dateValidation.valid) {
+      return res.status(400).json({ error: dateValidation.message });
+    }
+
+    // Validation du montant
+    if (payload.amountTotal <= 0) {
+      return res.status(400).json({ error: 'Le montant total doit être positif' });
+    }
+
+    // Validation du statut
+    if (payload.status) {
+      const validStatuses = ['pending', 'paid', 'cancelled'];
+      if (!validStatuses.includes(payload.status)) {
+        return res.status(400).json({ 
+          error: 'Statut invalide',
+          validStatuses
+        });
+      }
+    }
+
+    // Validation de la méthode de paiement
+    const validPaymentMethods = ['card', 'paypal'];
+    if (!validPaymentMethods.includes(payload.paymentMethod)) {
+      return res.status(400).json({ 
+        error: 'Méthode de paiement invalide',
+        validMethods: validPaymentMethods
+      });
+    }
+
+    // Récupérer la réservation existante pour conserver le code
+    const existingReservation = await Reservation.findById(id);
+    if (!existingReservation) {
+      return res.status(404).json({ error: 'Réservation non trouvée' });
+    }
+
+    // Préparer les données de remplacement (garder le code existant)
+    const replacementData = {
+      ...payload,
+      code: existingReservation.code, // Conserver le code existant
+      status: payload.status || 'pending'
+    };
+
+    // Remplacement complet de la réservation
+    const updatedReservation = await Reservation.findByIdAndUpdate(
+      id,
+      replacementData,
+      { 
+        new: true, 
+        runValidators: true,
+        overwrite: true // Remplace complètement le document
+      }
+    );
+
+    res.json(updatedReservation);
+  } catch (error) {
+    console.error('Erreur remplacement réservation:', error);
+    if (error.name === 'ValidationError') {
+      res.status(400).json({ 
+        error: 'Erreur de validation',
+        details: Object.values(error.errors).map(e => e.message)
+      });
+    } else {
+      res.status(400).json({ error: error.message });
+    }
+  }
+});
+
+// �🗑️ Supprimer une réservation
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
